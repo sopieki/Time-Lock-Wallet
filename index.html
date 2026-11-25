@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TimeLock Wallet — Крипто-копилка</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">🔒</span>
+        <h1>TimeLock Wallet</h1>
+      </div>
+      <div class="wallet-bar">
+        <span id="networkBadge" class="badge hidden"></span>
+        <span id="balanceBadge" class="badge hidden"></span>
+        <button id="connectBtn" class="btn btn-primary">Подключить MetaMask</button>
+      </div>
+    </header>
+
+    <div id="statusBox" class="status hidden"></div>
+
+    <main class="grid">
+      <section class="card">
+        <h2>Новая цель</h2>
+        <p class="subtitle">Заморозьте ETH в смарт-контракте до нужной даты. Вывести раньше срока невозможно.</p>
+
+        <form id="goalForm" class="form">
+          <label>
+            Название цели
+            <input type="text" id="goalName" placeholder="Например: На новый ноутбук" maxlength="50" required />
+          </label>
+
+          <label>
+            Сумма (ETH)
+            <input type="number" id="goalAmount" placeholder="0.01" step="0.0001" min="0.0001" required />
+          </label>
+
+          <label>
+            Дата и время разблокировки
+            <input type="datetime-local" id="unlockDate" required />
+          </label>
+
+          <button type="submit" id="createBtn" class="btn btn-primary full-width" disabled>
+            Заморозить средства
+          </button>
+        </form>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h2>Мои копилки</h2>
+          <button id="refreshBtn" class="btn btn-secondary btn-sm" disabled>Обновить</button>
+        </div>
+        <div id="goalsList" class="goals-list">
+          <p class="empty-state">Подключите кошелёк, чтобы увидеть ваши замороженные цели.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
