@@ -80,6 +80,36 @@
     </main>
   </div>
 
+  <!-- Окно подтверждения -->
+  <div id="confirmModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h3>Вы точно уверены?</h3>
+      <p class="modal-desc">
+        Проверьте данные перед заморозкой. После подтверждения изменить дату или снять средства раньше срока будет невозможно.
+      </p>
+
+      <div class="modal-summary">
+        <div class="summary-row">
+          <span>Цель</span>
+          <strong id="confirmName"></strong>
+        </div>
+        <div class="summary-row">
+          <span>Сумма</span>
+          <strong id="confirmAmount" class="mono"></strong>
+        </div>
+        <div class="summary-row">
+          <span>Разблокировка</span>
+          <strong id="confirmDate"></strong>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" id="cancelFreezeBtn" class="btn btn-ghost">Отмена</button>
+        <button type="button" id="confirmFreezeBtn" class="btn btn-primary">Да, заморозить</button>
+      </div>
+    </div>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
