@@ -1,6 +1,7 @@
 const STORAGE_KEY = "timelock_wallet_data";
 
 let walletData = null;
+let pendingGoal = null;
 
 const connectBtn = document.getElementById("connectBtn");
 const createBtn = document.getElementById("createBtn");
@@ -10,6 +11,13 @@ const balanceBadge = document.getElementById("balanceBadge");
 const statusBox = document.getElementById("statusBox");
 const goalsList = document.getElementById("goalsList");
 const goalForm = document.getElementById("goalForm");
+
+const confirmModal = document.getElementById("confirmModal");
+const confirmName = document.getElementById("confirmName");
+const confirmAmount = document.getElementById("confirmAmount");
+const confirmDate = document.getElementById("confirmDate");
+const cancelFreezeBtn = document.getElementById("cancelFreezeBtn");
+const confirmFreezeBtn = document.getElementById("confirmFreezeBtn");
 
 function showStatus(message, type = "") {
   statusBox.textContent = message;
@@ -43,13 +51,12 @@ function createOrOpenWallet() {
     return;
   }
 
-  // Генерируем настоящий Ethereum-кошелёк прямо в браузере
   const randomWallet = ethers.Wallet.createRandom();
 
   walletData = {
     address: randomWallet.address,
     mnemonic: randomWallet.mnemonic.phrase,
-    balance: 10.0, // Стартовый тестовый баланс 10 ETH
+    balance: 10.0,
     goals: []
   };
 
@@ -57,7 +64,7 @@ function createOrOpenWallet() {
   renderWalletUI();
   renderGoals();
   showStatus(
-    `Кошелёк создан! Начислено 10 тестовых ETH. Нажмите на адрес сверху, чтобы посмотреть вашу Seed-фразу.`,
+    "Кошелёк создан! Начислено 10 тестовых ETH. Нажмите на адрес сверху, чтобы посмотреть вашу Seed-фразу.",
     "success"
   );
 }
@@ -114,6 +121,19 @@ function renderGoals() {
   });
 }
 
+function openConfirmModal(goal) {
+  pendingGoal = goal;
+  confirmName.textContent = goal.name;
+  confirmAmount.textContent = `${goal.amount} ETH`;
+  confirmDate.textContent = new Date(goal.unlockTime * 1000).toLocaleString("ru-RU");
+  confirmModal.classList.remove("hidden");
+}
+
+function closeConfirmModal() {
+  pendingGoal = null;
+  confirmModal.classList.add("hidden");
+}
+
 goalForm.addEventListener("submit", (e) => {
   e.preventDefault();
   if (!walletData) return;
@@ -133,20 +153,42 @@ goalForm.addEventListener("submit", (e) => {
     return;
   }
 
-  walletData.balance -= amount;
+  openConfirmModal({ name, amount, unlockTime });
+});
+
+confirmFreezeBtn.addEventListener("click", () => {
+  if (!pendingGoal || !walletData) return;
+
+  walletData.balance = Number((walletData.balance - pendingGoal.amount).toFixed(6));
   walletData.goals.push({
     id: walletData.goals.length,
-    name,
-    amount,
-    unlockTime,
+    name: pendingGoal.name,
+    amount: pendingGoal.amount,
+    unlockTime: pendingGoal.unlockTime,
     withdrawn: false
   });
+
+  const savedName = pendingGoal.name;
+  const savedAmount = pendingGoal.amount;
 
   saveData();
   renderWalletUI();
   renderGoals();
   goalForm.reset();
-  showStatus(`Заморожено ${amount} ETH на цель «${name}»!`, "success");
+  closeConfirmModal();
+  showStatus(`Заморожено ${savedAmount} ETH на цель «${savedName}»!`, "success");
+});
+
+cancelFreezeBtn.addEventListener("click", closeConfirmModal);
+
+confirmModal.addEventListener("click", (e) => {
+  if (e.target === confirmModal) closeConfirmModal();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !confirmModal.classList.contains("hidden")) {
+    closeConfirmModal();
+  }
 });
 
 window.withdrawGoal = function (goalId) {
@@ -159,7 +201,7 @@ window.withdrawGoal = function (goalId) {
   }
 
   goal.withdrawn = true;
-  walletData.balance += goal.amount;
+  walletData.balance = Number((walletData.balance + goal.amount).toFixed(6));
 
   saveData();
   renderWalletUI();
@@ -170,5 +212,4 @@ window.withdrawGoal = function (goalId) {
 connectBtn.addEventListener("click", createOrOpenWallet);
 refreshBtn.addEventListener("click", renderGoals);
 
-// Загружаем сохранённый кошелёк при открытии сайта
 loadData();
